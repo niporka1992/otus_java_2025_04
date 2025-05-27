@@ -2,11 +2,12 @@ package ru.otus;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 
 public class CustomerService {
 
-    private final TreeMap<Customer, String> map =
+    private final NavigableMap<Customer, String> map =
             new TreeMap<>(Comparator.comparingLong(Customer::getScores).thenComparingLong(Customer::getId));
 
     public Map.Entry<Customer, String> getSmallest() {
