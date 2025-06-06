@@ -11,7 +11,7 @@ public class Data {
         this.value = value;
     }
 
-    public Integer getValue() {
+    public int getValue() {
         return value;
     }
 }
