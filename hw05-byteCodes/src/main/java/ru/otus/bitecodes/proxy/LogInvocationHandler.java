@@ -2,8 +2,8 @@ package ru.otus.bitecodes.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.otus.bitecodes.annotation.Log;
@@ -12,26 +12,23 @@ public class LogInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(LogInvocationHandler.class);
 
     private final Object target;
-    private final Map<Method, Method> methodCache = new HashMap<>();
-    private final Map<Method, Boolean> logAnnotationCache = new HashMap<>();
+    private final Set<Method> methodsToLog = new HashSet<>();
 
     public LogInvocationHandler(Object target) {
         this.target = target;
+
+        for (Method method : target.getClass().getMethods()) {
+            if (method.isAnnotationPresent(Log.class)) {
+                methodsToLog.add(method);
+            }
+        }
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Method targetMethod = methodCache.computeIfAbsent(method, m -> {
-            try {
-                return target.getClass().getMethod(m.getName(), m.getParameterTypes());
-            } catch (NoSuchMethodException e) {
-                throw new IllegalStateException(e);
-            }
-        });
+        Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
 
-        Boolean shouldLog = logAnnotationCache.computeIfAbsent(targetMethod, m -> m.isAnnotationPresent(Log.class));
-
-        if (Boolean.TRUE.equals(shouldLog) && logger.isInfoEnabled()) {
+        if (methodsToLog.contains(targetMethod) && logger.isInfoEnabled()) {
             StringBuilder sb = new StringBuilder("executed method: " + method.getName());
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
