@@ -1,12 +1,13 @@
 package ru.otus.bitecodes.proxy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.otus.bitecodes.annotation.Log;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.otus.bitecodes.annotation.Log;
 
 public class LogInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(LogInvocationHandler.class);
@@ -17,27 +18,36 @@ public class LogInvocationHandler implements InvocationHandler {
     public LogInvocationHandler(Object target) {
         this.target = target;
 
-        for (Method method : target.getClass().getMethods()) {
-            if (method.isAnnotationPresent(Log.class)) {
-                methodsToLog.add(method);
+        Class<?> targetClass = target.getClass();
+
+        for (Class<?> interfaceClass : targetClass.getInterfaces()) {
+            for (Method interfaceMethod : interfaceClass.getMethods()) {
+                try {
+                    Method implMethod = targetClass.getMethod(interfaceMethod.getName(), interfaceMethod.getParameterTypes());
+                    if (implMethod.isAnnotationPresent(Log.class)) {
+                        methodsToLog.add(interfaceMethod);
+                    }
+                } catch (NoSuchMethodException ignored) {
+                }
             }
         }
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
-
-        if (methodsToLog.contains(targetMethod) && logger.isInfoEnabled()) {
-            StringBuilder sb = new StringBuilder("executed method: " + method.getName());
-            if (args != null) {
-                for (int i = 0; i < args.length; i++) {
-                    sb.append(", param").append(i + 1).append(": ").append(args[i]);
+        if (logger.isInfoEnabled()) {
+            Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
+            if (methodsToLog.contains(targetMethod)) {
+                StringBuilder sb = new StringBuilder("executed method: ").append(method.getName());
+                if (args != null) {
+                    for (int i = 0; i < args.length; i++) {
+                        sb.append(", param").append(i + 1).append(": ").append(args[i]);
+                    }
                 }
+                logger.info(sb.toString());
             }
-            logger.info(sb.toString());
         }
-
-        return targetMethod.invoke(target, args);
+        return method.invoke(target, args);
     }
+
 }
