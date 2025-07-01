@@ -1,13 +1,12 @@
 package ru.otus.bitecodes.proxy;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.otus.bitecodes.annotation.Log;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.otus.bitecodes.annotation.Log;
 
 public class LogInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(LogInvocationHandler.class);
@@ -23,11 +22,13 @@ public class LogInvocationHandler implements InvocationHandler {
         for (Class<?> interfaceClass : targetClass.getInterfaces()) {
             for (Method interfaceMethod : interfaceClass.getMethods()) {
                 try {
-                    Method implMethod = targetClass.getMethod(interfaceMethod.getName(), interfaceMethod.getParameterTypes());
+                    Method implMethod =
+                            targetClass.getMethod(interfaceMethod.getName(), interfaceMethod.getParameterTypes());
                     if (implMethod.isAnnotationPresent(Log.class)) {
                         methodsToLog.add(interfaceMethod);
                     }
                 } catch (NoSuchMethodException ignored) {
+                    // Метод из интерфейса не реализован явно в target — пропускаем
                 }
             }
         }
@@ -49,5 +50,4 @@ public class LogInvocationHandler implements InvocationHandler {
         }
         return method.invoke(target, args);
     }
-
 }
