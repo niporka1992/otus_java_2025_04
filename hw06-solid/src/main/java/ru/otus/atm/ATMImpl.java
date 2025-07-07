@@ -1,125 +1,73 @@
 package ru.otus.atm;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import ru.otus.atm.enums.BanknoteDenominationRu;
 import ru.otus.atm.exeptions.CannotDispenseExactAmountException;
 import ru.otus.atm.exeptions.InvalidAmountException;
-import ru.otus.atm.exeptions.NotEnoughMoneyException;
 import ru.otus.atm.interfaces.ATM;
-import ru.otus.atm.interfaces.BanknoteCell;
+import ru.otus.atm.interfaces.BanknoteStorage;
 
 public class ATMImpl implements ATM {
 
-    private final Map<BanknoteDenominationRu, BanknoteCell> cells;
-    private final List<BanknoteDenominationRu> denominationsDescending;
+    private final BanknoteStorage storage;
 
-    public ATMImpl() {
-        this.denominationsDescending = initDenominationsDescending();
-        this.cells = initCells(denominationsDescending);
-    }
-
-    private static List<BanknoteDenominationRu> initDenominationsDescending() {
-        return Arrays.stream(BanknoteDenominationRu.values())
-                .sorted(Comparator.comparingInt(BanknoteDenominationRu::getValue)
-                        .reversed())
-                .toList();
-    }
-
-    private static Map<BanknoteDenominationRu, BanknoteCell> initCells(List<BanknoteDenominationRu> denominations) {
-        Map<BanknoteDenominationRu, BanknoteCell> cells = new EnumMap<>(BanknoteDenominationRu.class);
-
-        for (BanknoteDenominationRu denomination : denominations) {
-            BanknoteCell cell = new BanknoteCellImpl(denomination);
-            cells.put(denomination, cell);
-        }
-        return cells;
+    public ATMImpl(BanknoteStorage storage) {
+        this.storage = storage;
     }
 
     @Override
     public void deposit(BanknoteDenominationRu denomination, int count) {
-        validatePositiveCount(count);
-        BanknoteCell cell = getCellOrThrow(denomination);
-        cell.addBanknotes(count);
+        storage.deposit(denomination, count);
     }
 
     @Override
-    public void withdraw(int amount) throws NotEnoughMoneyException, InvalidAmountException {
-        validatePositiveAmount(amount);
-        int balance = getBalance();
-        validateSufficientBalance(amount, balance);
+    public Map<BanknoteDenominationRu, Integer> withdraw(int amount) {
+        validateWithdrawAmount(amount);
 
-        Map<BanknoteDenominationRu, Integer> withdrawalPlan = calculateWithdrawalPlan(amount);
+        Map<BanknoteDenominationRu, Integer> plan = buildWithdrawPlan(amount);
 
-        for (Map.Entry<BanknoteDenominationRu, Integer> entry : withdrawalPlan.entrySet()) {
-            cells.get(entry.getKey()).removeBanknotes(entry.getValue());
-        }
-    }
-
-    @Override
-    public int getBalance() {
-        return cells.values().stream().mapToInt(BanknoteCell::getAmount).sum();
-    }
-
-    private Map<BanknoteDenominationRu, Integer> calculateWithdrawalPlan(int amount)
-            throws CannotDispenseExactAmountException {
-
-        int remaining = amount;
-        Map<BanknoteDenominationRu, Integer> plan = new EnumMap<>(BanknoteDenominationRu.class);
-
-        for (BanknoteDenominationRu denomination : denominationsDescending) {
-            BanknoteCell cell = cells.get(denomination);
-            int count = calculateBanknotesToDispense(cell, denomination, remaining);
-
-            if (count > 0) {
-                plan.put(denomination, count);
-                remaining -= count * denomination.getValue();
-            }
-
-            if (remaining == 0) {
-                break;
-            }
-        }
-
-        validateWithdrawalPossible(remaining);
+        storage.withdraw(plan);
 
         return plan;
     }
 
-    private int calculateBanknotesToDispense(BanknoteCell cell, BanknoteDenominationRu denomination, int remaining) {
-        int needed = remaining / denomination.getValue();
-        int available = cell.getCount();
-        return Math.min(needed, available);
+    @Override
+    public int getBalance() {
+        return storage.getBalance();
     }
 
-    private void validateWithdrawalPossible(int remaining) {
-        if (remaining != 0) {
-            throw new CannotDispenseExactAmountException("Cannot withdraw exact amount with available banknotes");
-        }
-    }
+    // --- Приватные методы ---
 
-    private void validatePositiveCount(int count) {
-        if (count <= 0) {
-            throw new InvalidAmountException("Count must be positive");
-        }
-    }
-
-    private void validatePositiveAmount(int amount) {
+    private void validateWithdrawAmount(int amount) {
         if (amount <= 0) {
-            throw new InvalidAmountException("Amount must be positive");
+            throw new InvalidAmountException("Invalid amount: " + amount);
+        }
+        if (amount > storage.getBalance()) {
+            throw new CannotDispenseExactAmountException("Недостаточно средств в хранилище");
         }
     }
 
-    private void validateSufficientBalance(int amount, int balance) {
-        if (amount > balance) {
-            throw new NotEnoughMoneyException("Not enough money in ATM");
-        }
-    }
+    private Map<BanknoteDenominationRu, Integer> buildWithdrawPlan(int amount) {
+        Map<BanknoteDenominationRu, Integer> plan = new EnumMap<>(BanknoteDenominationRu.class);
+        int remaining = amount;
 
-    private BanknoteCell getCellOrThrow(BanknoteDenominationRu denomination) {
-        BanknoteCell cell = cells.get(denomination);
-        if (cell == null) {
-            throw new InvalidAmountException("Unknown denomination");
+        List<BanknoteDenominationRu> denominations = storage.getAvailableDenominationsDesc();
+
+        for (BanknoteDenominationRu denom : denominations) {
+            int countInCell = storage.getCount(denom);
+            int countToUse = Math.min(remaining / denom.getValue(), countInCell);
+            if (countToUse > 0) {
+                plan.put(denom, countToUse);
+                remaining -= countToUse * denom.getValue();
+            }
         }
-        return cell;
+
+        if (remaining > 0) {
+            throw new CannotDispenseExactAmountException("Невозможно выдать сумму точно");
+        }
+
+        return plan;
     }
 }
