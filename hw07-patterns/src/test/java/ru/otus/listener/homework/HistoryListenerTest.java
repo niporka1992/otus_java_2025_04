@@ -33,6 +33,5 @@ class HistoryListenerTest {
         var messageFromHistory = historyListener.findMessageById(id);
         assertThat(messageFromHistory).isPresent();
         assertThat(messageFromHistory.get().getField13().getData()).containsExactly(data);
-
     }
 }
