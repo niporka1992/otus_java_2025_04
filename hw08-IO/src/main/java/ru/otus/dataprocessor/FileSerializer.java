@@ -28,7 +28,7 @@ public class FileSerializer implements Serializer {
 
             mapper.writeValue(file, data);
         } catch (IOException e) {
-            throw new FileProcessException("Error while writing to file: " + fileName);
+            throw new FileProcessException("Error while writing to file: " + fileName, e);
         }
     }
 }
