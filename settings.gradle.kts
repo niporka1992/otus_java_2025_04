@@ -7,6 +7,8 @@ include("hw05-byteCodes")
 include("hw06-solid")
 include("hw07-patterns")
 
+include("hw09-jdbc")
+
 pluginManagement {
     val jgitver: String by settings
     val dependencyManagement: String by settings
@@ -28,5 +30,6 @@ pluginManagement {
         id("com.diffplug.spotless") version spotless
     }
 }
+
 
 
