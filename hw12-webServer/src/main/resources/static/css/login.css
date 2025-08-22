@@ -1,0 +1,74 @@
+body {
+    background-color: #f4f6f8;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.top {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.top img {
+    width: 80px;
+    margin-bottom: 20px;
+}
+
+/* Центрируем форму и уменьшаем ее размеры в 3 раза */
+.top form {
+    width: 33%;          /* примерно в 3 раза уже */
+    margin: 0 auto;      /* центрируем горизонтально */
+    text-align: left;
+}
+
+/* Метки (label) с красивым шрифтом и аккуратным отступом */
+.top form label {
+    display: block;
+    margin: 8px 0 4px;
+    font-weight: 600;
+    font-size: 12px;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: capitalize; /* Чтобы первая буква была заглавной */
+}
+
+/* Поля ввода меньшего размера */
+.top form input[type="text"],
+.top form input[type="password"] {
+    width: 100%;
+    padding: 5px 8px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Кнопка чуть меньше и аккуратнее */
+.top form input[type="submit"] {
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.top form input[type="submit"]:hover {
+    background-color: #004494;
+}
