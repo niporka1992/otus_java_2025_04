@@ -55,6 +55,8 @@ allprojects {
             force("org.codehaus.jackson:jackson-core-asl:1.8.8")
             force("org.codehaus.jackson:jackson-mapper-asl:1.8.8")
             force("commons-io:commons-io:2.18.0")
+            force("org.reflections:reflections:0.10.2")
+
         }
     }
 }
