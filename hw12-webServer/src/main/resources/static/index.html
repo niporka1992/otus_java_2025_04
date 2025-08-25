@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Index</title>
+
+    <script>
+        let countdown = 3;
+        let timerInterval;
+
+        function startRedirect(url) {
+            const timerEl = document.getElementById('redirect-timer');
+            timerInterval = setInterval(() => {
+                if (countdown > 0) {
+                    timerEl.textContent = countdown;
+                    countdown--;
+                } else {
+                    clearInterval(timerInterval);
+                    window.location.href = url;
+                }
+            }, 1000);
+        }
+
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/', { credentials: 'include' });
+                if (!response.ok) throw new Error('Неавторизован');
+
+                const data = await response.json();
+
+                const messageDiv = document.getElementById('redirect-message');
+
+                if (data.isAuthenticated) {
+                    messageDiv.innerHTML = `👋 Добро пожаловать, <strong>${data.userName}</strong>! Сейчас вы будете перенаправлены в личный кабинет...<br> Через <span id="redirect-timer">3</span> секунды.`;
+                    startRedirect('/client');
+                } else {
+                    messageDiv.innerHTML = `🔒 Вы будете перенаправлены на страницу входа через <span id="redirect-timer">3</span> секунды...`;
+                    startRedirect('/login');
+                }
+            } catch (e) {
+                const messageDiv = document.getElementById('redirect-message');
+                messageDiv.innerHTML = `⚠️ Произошла ошибка. Вы будете перенаправлены на страницу входа через <span id="redirect-timer">3</span> секунды...`;
+                startRedirect('/login');
+            }
+        }
+
+        window.onload = checkAuth;
+    </script>
+</head>
+<body>
+<div class="top" style="text-align:center;">
+    <img src="img/logo.svg" alt="logo" style="width: 300px; height: 300px;">
+    <div id="redirect-message">
+        Проверяем авторизацию...
+    </div>
+</div>
+</body>
+</html>
