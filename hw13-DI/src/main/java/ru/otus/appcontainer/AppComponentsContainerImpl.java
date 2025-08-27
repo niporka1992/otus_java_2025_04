@@ -1,13 +1,14 @@
 package ru.otus.appcontainer;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
 import org.reflections.Reflections;
 import ru.otus.appcontainer.api.AppComponent;
 import ru.otus.appcontainer.api.AppComponentsContainer;
 import ru.otus.appcontainer.api.AppComponentsContainerConfig;
 import ru.otus.appcontainer.exeption.ComponentException;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 
 public class AppComponentsContainerImpl implements AppComponentsContainer {
 
@@ -15,7 +16,7 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
     private final Map<String, Object> appComponentsByName = new HashMap<>();
 
     public AppComponentsContainerImpl(Class<?> initialConfigClass) {
-        init(new Class<?>[] {initialConfigClass});
+        init(new Class<?>[]{initialConfigClass});
     }
 
     public AppComponentsContainerImpl(Class<?>... configClasses) {
@@ -24,6 +25,18 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
 
     public AppComponentsContainerImpl(String basePackage) {
         Set<Class<?>> configClasses = findConfigClasses(basePackage);
+        if (configClasses.isEmpty()) {
+            throw new IllegalStateException(
+                    "Конфигурационные классы не найдены в пакете: " + basePackage
+            );
+        }
+
+        if (configClasses.size() > 1) {
+            throw new IllegalStateException(
+                    "Ожидался один конфигурационный класс, но найдено " + configClasses.size() +
+                            ": " + configClasses
+            );
+        }
         init(configClasses.toArray(new Class<?>[0]));
     }
 
@@ -76,9 +89,9 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
         try {
             return configClass.getDeclaredConstructor().newInstance();
         } catch (InstantiationException
-                | IllegalAccessException
-                | InvocationTargetException
-                | NoSuchMethodException e) {
+                 | IllegalAccessException
+                 | InvocationTargetException
+                 | NoSuchMethodException e) {
             throw new ComponentException("Ошибка при создании экземпляра конфигурации: " + configClass.getName(), e);
         }
     }
