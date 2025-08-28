@@ -1,0 +1,25 @@
+server:
+  port: 4173
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/demoDB
+    username: usr
+    password: pwd
+    driver-class-name: org.postgresql.Driver
+
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+logging:
+  level:
+    org.springframework.jdbc.core: info
+    org.springframework.data.jdbc: info
