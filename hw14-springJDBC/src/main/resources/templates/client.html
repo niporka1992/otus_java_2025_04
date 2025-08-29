@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление клиентами</title>
+    <script src="js/clients.js"></script>
+    <link rel="stylesheet" href="css/clients.css" />
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Работа с клиентами</h2>
+    </div>
+
+    <div class="content">
+        <!-- Левая колонка: список -->
+        <div class="left" id="clientsBlock" style="display:none;">
+            <div class="block-header">
+                <h4>Список клиентов</h4>
+                <button class="close-btn" id="closeClientsBtn" onclick="closeBlock('clientsBlock')">✖</button>
+            </div>
+            <div id="clientsContainer" class="clients-container"></div>
+        </div>
+
+        <!-- Правая колонка: форма -->
+        <div class="right" id="createForm" style="display:none;">
+            <div class="block-header">
+                <h4>Создать клиента</h4>
+                <button class="close-btn" id="closeFormBtn" onclick="closeBlock('createForm')">✖</button>
+            </div>
+
+            <input type="text" id="newClientName" placeholder="Имя">
+            <input type="text" id="newClientAddress" placeholder="Адрес">
+
+            <div id="phonesContainer">
+                <input type="text" class="phone-input" placeholder="Телефон">
+            </div>
+            <button type="button" onclick="addPhoneField()">+ Телефон</button>
+
+            <button onclick="createClient()">Сохранить</button>
+        </div>
+    </div>
+
+
+    <!-- Управляющие кнопки -->
+    <div class="controls">
+        <button onclick="showClients()">Показать список клиентов</button>
+        <button onclick="showCreateForm()">Создать клиента</button>
+    </div>
+</div>
+</body>
+</html>
