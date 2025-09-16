@@ -13,6 +13,7 @@ include("hw11-cache")
 include("hw12-webServer")
 include("hw13-DI")
 include("hw14-springJDBC")
+include("hw15-executors")
 
 
 pluginManagement {
